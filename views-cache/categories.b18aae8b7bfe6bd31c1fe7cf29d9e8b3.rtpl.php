@@ -7,7 +7,7 @@
   </h1>
   <ol class="breadcrumb">
     <li><a href="/admin"><i class="fa fa-dashboard"></i> Home</a></li>
-    <li class="active"><a href="/admin/users">Categorias</a></li>
+    <li class="active"><a href="/admin/categories">Categorias</a></li>
   </ol>
 </section>
 
@@ -19,7 +19,7 @@
   		<div class="box box-primary">
             
             <div class="box-header">
-              <a href="/admin/users/create" class="btn btn-success">Cadastrar Categoria</a>
+              <a href="/admin/categories/create" class="btn btn-success">Cadastrar Categoria</a>
             </div>
 
             <div class="box-body no-padding">

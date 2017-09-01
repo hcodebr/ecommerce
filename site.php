@@ -4,7 +4,6 @@ use \Hcode\Page;
 use \Hcode\Model\Product;
 use \Hcode\Model\Category;
 use \Hcode\Model\Cart;
-use \Hcode\Model\User;
 
 $app->get('/', function() {
     
@@ -70,8 +69,7 @@ $app->get("/cart", function(){
 
 	$page->setTpl("cart", [
 		'cart'=>$cart->getValues(),
-		'products'=>$cart->getProducts(),
-		'error'=>$cart->getCartError()
+		'products'=>$cart->getProducts()
 	]);
 
 });
@@ -124,192 +122,6 @@ $app->get("/cart/:idproduct/remove", function($idproduct){
 
 	header("Location: /cart");
 	exit;
-
-});
-
-$app->post("/cart/freight", function(){
-
-	$nrzipcode = str_replace("-", "", $_POST['zipcode']);
-
-	$cart = Cart::getFromSession();
-
-	$cart->setFreight($nrzipcode);
-
-	header("Location: /cart");
-	exit;
-
-});
-
-$app->get("/checkout", function(){
-
-	User::verifyLogin(false);
-
-	$cart = Cart::getFromSession();
-
-	$page = new Page();
-
-	$page->setTpl("checkout", [
-		'cart'=>$cart->getValues(),
-		'address'=>[]
-	]);
-
-});
-
-$app->get("/login", function(){
-
-	$page = new Page();
-
-	$page->setTpl("login", [
-		'loginError'=>User::getError(),
-		'registerError'=>User::getErrorRegister(),
-		'postValues'=>(isset($_SESSION['postValues'])) ? $_SESSION['postValues'] : ['name'=>'', 'email'=>'', 'phone'=>'']
-	]);
-
-});
-
-$app->post("/login", function(){
-
-	try {
-
-		User::login($_POST["login"], $_POST["password"]);
-
-	} catch (Exception $e) {
-
-		User::setError($e->getMessage());
-
-	}
-
-	header("Location: /checkout");
-	exit;
-
-});
-
-$app->get("/logout", function(){
-
-	User::logout();
-
-	header("Location: /login");
-	exit;
-
-});
-
-$app->post("/register", function(){
-
-	$_SESSION['postValues'] = $_POST;
-	$_SESSION['postValues']['password'] = '';
-
-	if (!isset($_POST['name']) || $_POST['name']=='') {
-		User::setErrorRegister("Preencha o nome completo.");
-		header('Location: /login');
-		exit;
-	}
-
-	if (!isset($_POST['email']) || $_POST['email']=='') {
-		User::setErrorRegister("Preencha o e-mail.");
-		header('Location: /login');
-		exit;
-	}
-
-	if (!isset($_POST['password']) || $_POST['password']=='') {
-		User::setErrorRegister("Preencha a senha.");
-		header('Location: /login');
-		exit;
-	}
-
-	if (User::checkLoginExist($_POST['email'])) {
-		User::setErrorRegister("Este usuário já está cadastrado. Use a opção esqueci a senha.");
-		header('Location: /login');
-		exit;
-	}
-
-	$user = new User();
-
-	$user->setData([
-		'desperson'=>utf8_decode($_POST['name']),
-		'deslogin'=>$_POST['email'],
-		'desemail'=>$_POST['email'],
-		'nrphone'=>$_POST['phone'],
-		'despassword'=>User::getPasswordHash($_POST['password']),
-		'inadmin'=>0
-	]);
-	
-	$user->save();
-
-	try {
-
-		User::login($_POST["email"], $_POST["password"]);
-
-	} catch (Exception $e) {
-
-		User::setError($e->getMessage());
-		header('Location: /login');
-		exit;
-
-	}
-
-	$_SESSION['postValues'] = ['name'=>'', 'email'=>'', 'phone'=>''];
-
-	header('Location: /checkout');
-	exit;
-
-});
-
-$app->get("/forgot", function() {
-
-	$page = new Page();
-
-	$page->setTpl("forgot");	
-
-});
-
-$app->post("/forgot", function(){
-
-	$user = User::getForgot($_POST["email"], false);
-
-	header("Location: /forgot/sent");
-	exit;
-
-});
-
-$app->get("/forgot/sent", function(){
-
-	$page = new Page();
-
-	$page->setTpl("forgot-sent");	
-
-});
-
-
-$app->get("/forgot/reset", function(){
-
-	$user = User::validForgotDecrypt(urldecode($_GET["code"]));
-
-	$page = new Page();
-
-	$page->setTpl("forgot-reset", array(
-		"name"=>$user["desperson"],
-		"code"=>$_GET["code"]
-	));
-
-});
-
-$app->post("/forgot/reset", function(){
-
-	$forgot = User::validForgotDecrypt($_POST["code"]);	
-
-	User::setFogotUsed($forgot["idrecovery"]);
-
-	$user = new User();
-
-	$user->get((int)$forgot["iduser"]);
-
-	$password = User::getPasswordHash($_POST["password"]);
-
-	$user->setPassword($password);
-
-	$page = new Page();
-
-	$page->setTpl("forgot-reset-success");
 
 });
 

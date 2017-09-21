@@ -14,9 +14,9 @@ $app->get("/admin/users/:iduser/password", function($iduser){
 	$page = new PageAdmin();
 
 	$page->setTpl("users-password", [
-		'msgSuccess'=>User::getSuccess(),
-		'msgError'=>User::getError(),
-		'user'=>$user->getValues()
+		"user"=>$user->getValues(),
+		"msgError"=>User::getError(),
+		"msgSuccess"=>User::getSuccess()
 	]);
 
 });
@@ -25,7 +25,7 @@ $app->post("/admin/users/:iduser/password", function($iduser){
 
 	User::verifyLogin();
 
-	if (isset($_POST['despassword']) && $_POST['despassword']===''){
+	if (!isset($_POST['despassword']) || $_POST['despassword']==='') {
 
 		User::setError("Preencha a nova senha.");
 		header("Location: /admin/users/$iduser/password");
@@ -33,7 +33,7 @@ $app->post("/admin/users/:iduser/password", function($iduser){
 
 	}
 
-	if (isset($_POST['despassword-confirm']) && $_POST['despassword-confirm']===''){
+	if (!isset($_POST['despassword-confirm']) || $_POST['despassword-confirm']==='') {
 
 		User::setError("Preencha a confirmação da nova senha.");
 		header("Location: /admin/users/$iduser/password");
@@ -41,9 +41,9 @@ $app->post("/admin/users/:iduser/password", function($iduser){
 
 	}
 
-	if ($_POST['despassword'] !== $_POST['despassword-confirm']){
+	if ($_POST['despassword'] !== $_POST['despassword-confirm']) {
 
-		User::setError("Confirme a nova senha corretamente.");
+		User::setError("Confirme corretamente as senhas.");
 		header("Location: /admin/users/$iduser/password");
 		exit;
 
@@ -56,10 +56,12 @@ $app->post("/admin/users/:iduser/password", function($iduser){
 	$user->setPassword(User::getPasswordHash($_POST['despassword']));
 
 	User::setSuccess("Senha alterada com sucesso.");
+
 	header("Location: /admin/users/$iduser/password");
 	exit;
 
 });
+
 
 $app->get("/admin/users", function() {
 
